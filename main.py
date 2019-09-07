@@ -6,10 +6,10 @@ from bert.preprocess.preprocess import build_dictionary
 from bert.train.train import pretrain
 
 data_dir = None
-train_dir = 'data/reconstructed_prtrain/reconstructed_prtrain.txt'
-val_path = 'data/reconstructed_prtrain/reconstructed_prtrain.txt'
+train_dir = 'data/reconstructed_pretrain/reconstructed_pretrain.txt'
+val_path = 'data/reconstructed_pretrain/reconstructed_pretrain.txt'
 dictionary_path = 'dic/dic.txt'
-checkpoint_dir = 'data/reconstructed_prtrain/checkpoint'
+checkpoint_dir = 'data/reconstructed_pretrain/checkpoint'
 dataset_limit = None
 epochs = 100
 batch_size = 16
@@ -33,7 +33,7 @@ log_output = 'log/%s.log' % run_name
 
 
 if __name__ == '__main__':
-    build_dictionary(train_dir, 'dic/dic.txt')
+    build_dictionary('data/train.txt', 'dic/dic.txt')
     pretrain(data_dir, train_dir, val_path, dictionary_path,\
             dataset_limit, vocabulary_size, batch_size, max_len, epochs,\
             clip_grads, device, layers_count, hidden_size, heads_count,\
