@@ -8,7 +8,7 @@ from .utils.stateload import stateLoading
 from .optimizers import NoamOptimizer
 
 from .Seq2Seq.models import Seq2Seq
-from .Seq2Seq.utils import Seq2Seq_Metric
+from .Seq2Seq.utils import Seq2Seq_Metric, Seq2Seq_MCC, Seq2Seq_ACC, Seq2Seq_f1
 
 import torch
 from torch.nn import DataParallel
@@ -70,7 +70,7 @@ def finetuneSeq2Seq(pretrained_checkpoint,
         parameters_count=sum([p.nelement() for p in model.parameters()])))
 
     # Have not figured this out yet
-    metric_functions = [Seq2Seq_Metric]
+    metric_functions = [Seq2Seq_Metric, Seq2Seq_MCC, Seq2Seq_ACC, Seq2Seq_f1]
 
     train_dataloader = DataLoader(
         train_dataset,

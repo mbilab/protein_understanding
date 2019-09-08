@@ -5,12 +5,12 @@ import datetime
 
 pretrained_checkpoint = 'data/seq2seq/epoch=100-val_loss=2.71-val_metrics=0.183-0.5.pth'
 data_dir = None
-train_path = 'data/seq2seq/example.txt'
-val_path = 'data/seq2seq/example.txt'
+train_path = 'dlpred/training/all.txt'
+val_path = 'dlpred/training/val_959.txt'
 dictionary_path = 'dic/dic.txt'
 checkpoint_dir = 'data/seq2seq/FineTune'
 dataset_limit = None
-epochs = 10
+epochs = 200
 batch_size = 16
 print_every = 1
 save_every = 10

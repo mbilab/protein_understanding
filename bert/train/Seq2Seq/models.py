@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 
-
 class Seq2Seq(nn.Module):
 
     def __init__(self, model, device):
@@ -19,7 +18,8 @@ class Seq2Seq(nn.Module):
         # @!!!!!!!!!!!!!!!!!!!!!@
         # The source code attached to the paper is 3, but the dataset is 2
         self.ppi_output = nn.Linear(64, 2)
-        self.loss_function = nn.MSELoss()
+        #self.loss_function = nn.MSELoss()
+        self.loss_function = nn.CrossEntropyLoss(ignore_index=2)
 
     def forward(self, inputs, targets):
 
@@ -47,8 +47,14 @@ class Seq2Seq(nn.Module):
         input_cat = torch.cat([input_a, input_b], dim=2)
         out = self.time_distributed(input_cat)
         out = self.ppi_output(out)
-
-        loss = self.loss_function(out, targets)
+        out_ = out.clone().reshape(-1,2)
+        #out_ = torch.cat((out_, torch.zeros((len(out_), 1), device=self.device)), 1)
+        targets_ = targets.clone().reshape(-1,2)
+        for  t in targets_:
+            if 0. == t[0] and 0. == t[1]:
+                t[1] = 2
+        targets_ = torch.narrow(targets_, 1, 1, 1).squeeze().long()
+        loss = self.loss_function(out_, targets_)
         predictions = out
 
         return predictions, loss.unsqueeze(dim=0)
