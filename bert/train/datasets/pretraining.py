@@ -46,25 +46,12 @@ class MaskedDocument:
         """
         sentence = self.sentences[item]
 
-        masked_sentence = []
-        target_sentence = []
+        masked_index = randint(0, len(sentence)-1)
 
-        for token_index in sentence:
-            r = random()
-            if r < self.THRESHOLD:  # we mask 15% of all tokens in each sequence at random.
-                if r < self.THRESHOLD * 0.8:  # 80% of the time: Replace the word with the [MASK] token
-                    masked_sentence.append(MASK_INDEX)
-                    target_sentence.append(token_index)
-                elif r < self.THRESHOLD * 0.9:  # 10% of the time: Replace the word with a random word
-                    random_token_index = randint(5, self.vocabulary_size-1)
-                    masked_sentence.append(random_token_index)
-                    target_sentence.append(token_index)
-                else:  # 10% of the time: Keep the word unchanged
-                    masked_sentence.append(token_index)
-                    target_sentence.append(token_index)
-            else:
-                masked_sentence.append(token_index)
-                target_sentence.append(PAD_INDEX)
+        masked_sentence = sentence.copy()
+        target_sentence = [PAD_INDEX] * len(sentence)
+        masked_sentence[masked_index] = MASK_INDEX
+        target_sentence[masked_index] = sentence[masked_index]
 
         return masked_sentence, target_sentence
 
