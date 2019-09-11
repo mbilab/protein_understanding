@@ -2,6 +2,7 @@ from .utils.convert import convert_to_tensor, convert_to_array
 
 import torch
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 from os.path import join
 from datetime import datetime
@@ -105,6 +106,16 @@ class Trainer:
             if epoch % self.print_every == 0 and self.logger:
                 per_second = len(self.train_dataloader.dataset) / ((epoch_end_time - epoch_start_time).seconds + 1)
                 current_lr = self.optimizer.param_groups[0]['lr']
+                if 1 <= epoch:
+                    writer = SummaryWriter()
+                    writer.add_scalar('Loss/train',train_epoch_loss, epoch)
+                    writer.add_scalar('Loss/val',val_epoch_loss, epoch)
+                    writer.add_scalar('MCC/train',train_epoch_metrics[1], epoch)
+                    writer.add_scalar('MCC/val',val_epoch_metrics[1], epoch)
+                    writer.add_scalar('Accuracy/train',train_epoch_metrics[2], epoch)
+                    writer.add_scalar('Accuracy/val',val_epoch_metrics[2], epoch)
+                    writer.add_scalar('F1_score/train',train_epoch_metrics[3], epoch)
+                    writer.add_scalar('F1_score/val',val_epoch_metrics[3], epoch)
                 log_message = LOG_FORMAT.format(epoch=epoch,
                                                 progress=epoch / epochs,
                                                 per_second=per_second,
@@ -130,7 +141,6 @@ class Trainer:
         )
 
         checkpoint_output_path = join(self.checkpoint_dir, checkpoint_name)
-
         save_state = {
             'epoch': epoch,
             'train_loss': train_epoch_loss,

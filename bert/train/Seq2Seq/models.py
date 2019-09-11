@@ -48,7 +48,6 @@ class Seq2Seq(nn.Module):
         out = self.time_distributed(input_cat)
         out = self.ppi_output(out)
         out_ = out.clone().reshape(-1,2)
-        #out_ = torch.cat((out_, torch.zeros((len(out_), 1), device=self.device)), 1)
         targets_ = targets.clone().reshape(-1,2)
         for  t in targets_:
             if 0. == t[0] and 0. == t[1]:
