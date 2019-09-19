@@ -93,7 +93,7 @@ class Trainer:
         return epoch_loss, epoch_metrics
 
     def run(self, epochs=10):
-
+        writer = SummaryWriter()
         for epoch in range(self.epoch, epochs + 1):
             self.epoch = epoch
 
@@ -116,7 +116,6 @@ class Trainer:
                 per_second = len(self.train_dataloader.dataset) / ((epoch_end_time - epoch_start_time).seconds + 1)
                 current_lr = self.optimizer.param_groups[0]['lr']
                 if 1 <= epoch:
-                    writer = SummaryWriter()
                     writer.add_scalar('Loss/train',train_epoch_loss, epoch)
                     writer.add_scalar('Loss/val',val_epoch_loss, epoch)
                     writer.add_scalar('MCC/train',train_epoch_metrics[1], epoch)

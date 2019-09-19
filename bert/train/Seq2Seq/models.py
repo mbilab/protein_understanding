@@ -1,6 +1,8 @@
 import torch
 from torch import nn
 
+from bert.train import IGNORE_INDEX
+
 class Seq2Seq(nn.Module):
 
     def __init__(self, model, device):
@@ -18,8 +20,9 @@ class Seq2Seq(nn.Module):
         # @!!!!!!!!!!!!!!!!!!!!!@
         # The source code attached to the paper is 3, but the dataset is 2
         self.ppi_output = nn.Linear(64, 2)
+        self.act = nn.Softmax(dim=2)
         #self.loss_function = nn.MSELoss()
-        self.loss_function = nn.CrossEntropyLoss(ignore_index=2)
+        self.loss_function = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)
 
     def forward(self, inputs, targets):
 
@@ -47,13 +50,19 @@ class Seq2Seq(nn.Module):
         input_cat = torch.cat([input_a, input_b], dim=2)
         out = self.time_distributed(input_cat)
         out = self.ppi_output(out)
+        out = self.act(out)
+        _out = out.reshape(-1,2)
+        _targets = targets.reshape(-1)
+        print(out)
+        '''
         out_ = out.clone().reshape(-1,2)
         targets_ = targets.clone().reshape(-1,2)
         for  t in targets_:
             if 0. == t[0] and 0. == t[1]:
                 t[1] = 2
         targets_ = torch.narrow(targets_, 1, 1, 1).squeeze().long()
-        loss = self.loss_function(out_, targets_)
+        '''
+        loss = self.loss_function(_out, _targets)
         predictions = out
 
         return predictions, loss.unsqueeze(dim=0)

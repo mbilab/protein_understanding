@@ -3,12 +3,12 @@ from bert.train.train_s2s import finetuneSeq2Seq
 import torch
 import datetime
 
-pretrained_checkpoint = 'data/signal-peptides/epoch=100-val_loss=2.71-val_metrics=0.183-0.5.pth'
+pretrained_checkpoint = 'data/seq2seq/epoch=100-val_loss=2.71-val_metrics=0.183-0.5.pth'
 data_dir = None
 train_path = 'dlpred/training/all.txt'
-val_path = 'dlpred/training/val_959.txt'
+val_path = 'dlpred/training/val.txt'
 dictionary_path = 'dic/dic.txt'
-checkpoint_dir = 'data/signal-peptides/concate'
+checkpoint_dir = 'checkpoint_NoOnHot'
 dataset_limit = None
 epochs = 200
 batch_size = 16

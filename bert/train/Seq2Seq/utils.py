@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.metrics import matthews_corrcoef, accuracy_score, f1_score
+from bert.train import IGNORE_INDEX
 
 def Seq2Seq_Metric(predictions, targets):
     return np.array(0.)
@@ -8,13 +9,15 @@ def Seq2Seq_preprocess(predictions, targets):
     _true = []
     _pred = []
     predictions = predictions.reshape(-1,2)
-    targets = targets.reshape(-1,2)
+    targets = targets.reshape(-1)
+    with open('./pred.txt','a')as f:
+        f.write(f'{predictions}')
     for p, t in zip(predictions, targets):
-        if all([0.,0.] == t):
+        if IGNORE_INDEX == t:
             continue
         else:
             tmp = 1. if p[0] < p[1] else 0.
-            _true.append(t[1])
+            _true.append(t)
             _pred.append(tmp)
     return _true, _pred
 
