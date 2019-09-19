@@ -3,7 +3,7 @@ from bert.train.train_s2s import finetuneSeq2Seq
 import torch
 import datetime
 
-pretrained_checkpoint = 'data/seq2seq/epoch=100-val_loss=2.71-val_metrics=0.183-0.5.pth'
+pretrained_checkpoint = 'data/reconstructed_pretrain/checkpoint_No_MASK_dlpred/epoch=070-val_loss=0.00715-val_metrics=1.0-0.5.pth'
 data_dir = None
 train_path = 'dlpred/training/all.txt'
 val_path = 'dlpred/training/val.txt'

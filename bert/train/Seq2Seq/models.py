@@ -53,7 +53,6 @@ class Seq2Seq(nn.Module):
         out = self.act(out)
         _out = out.reshape(-1,2)
         _targets = targets.reshape(-1)
-        print(out)
         '''
         out_ = out.clone().reshape(-1,2)
         targets_ = targets.clone().reshape(-1,2)
