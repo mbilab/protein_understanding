@@ -1,6 +1,7 @@
 from .utils.convert import convert_to_tensor, convert_to_array
 
 import torch
+from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
 from os.path import join
@@ -89,6 +90,8 @@ class Trainer:
 
     def run(self, epochs=10):
 
+        writer = SummaryWriter(comment='test')
+
         for epoch in range(self.epoch, epochs + 1):
             self.epoch = epoch
 
@@ -117,6 +120,11 @@ class Trainer:
                                                 )
 
                 self.logger.info(log_message)
+
+            writer.add_scalar('Loss/train', train_epoch_loss, epoch)
+            writer.add_scalar('Loss/valid', val_epoch_loss, epoch)
+            writer.add_scalar('metric/train', train_epoch_metrics[0], epoch)
+            writer.add_scalar('metric/valid', val_epoch_metrics[0], epoch)
 
             if epoch % self.save_every == 0:
                 self._save_model(epoch, train_epoch_loss, val_epoch_loss, train_epoch_metrics, val_epoch_metrics)
