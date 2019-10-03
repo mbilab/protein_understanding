@@ -1,6 +1,7 @@
 from .utils.convert import convert_to_tensor, convert_to_array
 
 import torch
+from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from tqdm import tqdm
 
@@ -26,7 +27,8 @@ class Trainer:
 
     def __init__(self, loss_model, train_dataloader, val_dataloader,
                  metric_functions, device, optimizer, clip_grads,
-                 logger, checkpoint_dir, print_every, save_every, scheduler, monitor):
+                 logger, checkpoint_dir, print_every, save_every,
+                 scheduler, monitor, model_name):
 
         self.device = device
 
@@ -54,6 +56,7 @@ class Trainer:
 
         self.scheduler = ReduceLROnPlateau(optimzer, 'min') if scheduler == None else scheduler
         self.monitor = 'val_loss' if monitor == None else monitor
+        self.model_name = model_name
 
     def run_epoch(self, dataloader, mode='train'):
 
@@ -74,8 +77,8 @@ class Trainer:
             if mode == 'train':
                 self.optimizer.zero_grad()
                 batch_loss.backward()
-                for param in self.loss_model.parameters():
-                    print(param.grad.data.sum())
+                # for param in self.loss_model.parameters():
+                #     print(param.grad.data.sum())
                 if self.clip_grads:
                     torch.nn.utils.clip_grad_norm_(self.loss_model.parameters(), 1)
                 self.optimizer.step()
@@ -95,6 +98,8 @@ class Trainer:
 
     def run(self, epochs=10):
 
+        writer = SummaryWriter(comment=self.model_name)
+
         for epoch in range(self.epoch, epochs + 1):
             self.epoch = epoch
 
@@ -112,6 +117,9 @@ class Trainer:
                 self.scheduler.step(train_epoch_loss)
             elif self.monitor == 'val_loss':
                 self.scheduler.step(val_epoch_loss)
+
+            writer.add_scalar('Loss/train', train_epoch_loss, epoch)
+            writer.add_scalar('Loss/valid', val_epoch_loss, epoch)
 
             if epoch % self.print_every == 0 and self.logger:
                 per_second = len(self.train_dataloader.dataset) / ((epoch_end_time - epoch_start_time).seconds + 1)
