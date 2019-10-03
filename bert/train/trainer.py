@@ -64,7 +64,7 @@ class Trainer:
         epoch_count = 1
         epoch_metrics = [0 for _ in range(len(self.metric_functions))]
 
-        for inputs, targets, batch_count in tqdm(dataloader):
+        for inputs, targets, batch_count in tqdm(dataloader, ncols=60):
             inputs = convert_to_tensor(inputs, self.device)
             targets = convert_to_tensor(targets, self.device)
 
@@ -170,7 +170,6 @@ class Trainer:
 
         # representative_val_metric = val_epoch_metrics[0]
         representative_val_metric = val_epoch_loss
-        print(self.best_val_metric, representative_val_metric)
         if self.best_val_metric is None or self.best_val_metric > representative_val_metric:
             self.best_val_metric = representative_val_metric
             self.val_metrics_at_best = val_epoch_metrics
