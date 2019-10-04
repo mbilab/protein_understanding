@@ -105,7 +105,7 @@ class sigunet(nn.Module):
         #trans_out = out.transpose(2, 1)
         # errorenous
         #out, _ = torch.max(out, 2)
-        predictions = self.pass_threshold(_out)
+        predictions = _out
 
         flatten_out = _out.flatten(start_dim=0, end_dim=1)
         flatten_target = targets.flatten(start_dim=0, end_dim=1)

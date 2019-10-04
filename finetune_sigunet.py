@@ -2,6 +2,7 @@ from bert.train.train_sigunet import finetuneSigunet
 
 import torch
 import datetime
+import json
 
 pretrained_checkpoint = 'models/pretrain/SignalP_euk/checkpoint'
 data_dir = None
@@ -26,8 +27,6 @@ pretrain_fixed=True
 
 if __name__ == '__main__':
 
-    best_models = []
-
     for i in range(5):
         model_name = f'Sigunet_msk15_{i}'
         run_name = f"{model_name}:{layers_count}-hidden_size:{hidden_size}-heads_count:{heads_count}-fixed:{pretrain_fixed}-timestamp:{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
@@ -43,6 +42,17 @@ if __name__ == '__main__':
                 d_ff, dropout_prob, log_output, checkpoint_dir, print_every,\
                 save_every, config, model_name, pretrain_fixed=pretrain_fixed)
 
-        best_models.append(trainer.best_checkpoint_output_path)
+        best_model_config = {
+            'best_checkpoint_path': trainer.best_checkpoint_output_path,
+            'layers_count': layers_count,
+            'hidden_size': hidden_size,
+            'heads_count': heads_count,
+            'd_ff': d_ff,
+            'dropout_prob': dropout_prob,
+            'max_len': max_len,
+            'vocabulary_size': vocabulary_size,
+        }
 
-    print(best_models)
+        with open(f'models/finetune/{run_name}/best_model_config.json', 'w') as f:
+                json.dump(best_model_config, f)
+
