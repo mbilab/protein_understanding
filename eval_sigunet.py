@@ -34,14 +34,12 @@ def predict(model, dataloader):
 
     for inputs, targets, batch_count in dataloader:
         inputs = convert_to_tensor(inputs, device)
-        # targets = convert_to_tensor(targets, device)
 
         output, _ = model(inputs, 0, is_prediction=True)
         output = Softmax(dim=2)(output)
         output = convert_to_array(output)
 
         y_pred.append(output[:, :, 2])
-        # y_true.append(target_classify(targets[0]))
         y_true.append(targets[0])
 
     return np.concatenate(y_pred, axis=0), np.array(y_true)
@@ -93,7 +91,6 @@ def peptide_classify(peptide, n, thr):
 
     # append `0` for `accumlate[-1]`
     accumlate.append(0)
-    # print(accumlate)
     for i in range(0, len(peptide) - n + 1):
         if accumlate[i + n - 1] - accumlate[i - 1] == n:
             return 1
@@ -103,7 +100,7 @@ def peptide_classify(peptide, n, thr):
 def find_n_thr(y_pred, y_ture):
     best_config={'n': 0, 'thr': 0, 'mcc': 0}
     for n in range(4,5):
-        for thr100 in range(50, 90, 2):
+        for thr100 in range(50, 90, 1):
             thr = thr100 / 100
             y_pred_ = [peptide_classify(y, n, thr) for y in y_pred]
             mcc = matthews_corrcoef(y_ture, y_pred_)
@@ -142,10 +139,12 @@ if '__main__' == __name__:
 
     y_pred = []
     y_true = []
-    for i in range(5):
-        model_dir = f'models/finetune/Sigunet_msk15_1_{i}:2-hidden_size:128-heads_count:2-fixed:True'
+    print('predicting valdation data with best model')
+    model_dir = f'models/finetune/Sigunet_msk15'
+    model_config = ':2-hidden_size:128-heads_count:2-fixed:False'
+    for i in tqdm(range(5), ncols=70):
         valid_path = f'data/finetune_features/SignalP/euk_valid_{i}.txt'
-        with open(f'{model_dir}/best_model_config.json') as json_data_file:
+        with open(f'{model_dir}_{i}{model_config}/best_model_config.json') as json_data_file:
             conf = json.load(json_data_file)
 
         dataloader = build_dataloader(valid_path)
@@ -168,8 +167,7 @@ if '__main__' == __name__:
 
     y_pred = []
     for i in range(5):
-        model_dir = f'models/finetune/Sigunet_msk15_1_{i}:2-hidden_size:128-heads_count:2-fixed:True'
-        with open(f'{model_dir}/best_model_config.json') as json_data_file:
+        with open(f'{model_dir}_{i}{model_config}/best_model_config.json') as json_data_file:
             conf = json.load(json_data_file)
 
         model = load_model(conf, vocabulary_size)

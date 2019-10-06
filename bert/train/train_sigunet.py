@@ -34,7 +34,8 @@ def finetuneSigunet(pretrained_checkpoint,
              data_dir, train_path, val_path, dictionary_path,
              vocabulary_size, batch_size, max_len, epochs, lr, clip_grads, device,
              layers_count, hidden_size, heads_count, d_ff, dropout_prob,
-             log_output, checkpoint_dir, print_every, save_every, config, model_name, pretrain_fixed=True, run_name=None,**_):
+             log_output, checkpoint_dir, print_every,
+             save_every, config, run_name, pretrain_fixed, **_):
 
     random.seed(0)
     np.random.seed(0)
@@ -108,7 +109,7 @@ def finetuneSigunet(pretrained_checkpoint,
         device=device,
         scheduler=scheduler,
         monitor='train_loss',
-        model_name=model_name
+        run_name=run_name
     )
 
     trainer.run(epochs=epochs)
