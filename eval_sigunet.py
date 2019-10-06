@@ -1,6 +1,6 @@
 from bert.preprocess.dictionary import IndexDictionary
 from bert.train.model.bert import build_model
-from bert.train.datasets.NoOneHot import Seq2SeqDataset
+from bert.train.datasets.NoOneHot import Seq2SeqDataset, SPDS17Dataset
 from bert.train.utils.stateload import stateLoading
 from bert.train.utils.convert import convert_to_tensor, convert_to_array
 from bert.train.optimizers import NoamOptimizer
@@ -34,29 +34,37 @@ def predict(model, dataloader):
 
     for inputs, targets, batch_count in dataloader:
         inputs = convert_to_tensor(inputs, device)
-        targets = convert_to_tensor(targets, device)
+        # targets = convert_to_tensor(targets, device)
 
-        output, _ = model(inputs, targets)
+        output, _ = model(inputs, 0, is_prediction=True)
         output = Softmax(dim=2)(output)
         output = convert_to_array(output)
 
         y_pred.append(output[:, :, 2])
-        y_true.append(target_classify(targets[0]))
+        # y_true.append(target_classify(targets[0]))
+        y_true.append(targets[0])
 
     return np.concatenate(y_pred, axis=0), np.array(y_true)
 
-def build_dataloader(data_path):
+def build_dataloader(data_path, is_SPDS17=False):
     data_path = data_path if data_dir is None else join(data_dir, data_path)
-    dataset = Seq2SeqDataset(data_path=data_path, dictionary=dictionary, fixed_length=fixed_length)
+
+    if is_SPDS17:
+        dataset = SPDS17Dataset(data_path=data_path, dictionary=dictionary, fixed_length=fixed_length)
+    else:
+        dataset = Seq2SeqDataset(data_path=data_path, dictionary=dictionary, fixed_length=fixed_length)
+
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
-        collate_fn=Seq2SeqDataset.collate_function)
+        collate_fn=dataset.collate_function)
 
     return dataloader
 
 def target_classify(target):
-    if len(target) == 1:
+    if type(target) == int:
+        return 1 if target == 2 else -1
+    elif len(target) == 1:
         return 1 if target == 2 else -1
     elif 2 in target:
         return 1
@@ -94,7 +102,7 @@ def peptide_classify(peptide, n, thr):
 
 def find_n_thr(y_pred, y_ture):
     best_config={'n': 0, 'thr': 0, 'mcc': 0}
-    for n in range(2, 10):
+    for n in range(4,5):
         for thr100 in range(50, 90, 2):
             thr = thr100 / 100
             y_pred_ = [peptide_classify(y, n, thr) for y in y_pred]
@@ -103,7 +111,7 @@ def find_n_thr(y_pred, y_ture):
                 best_config['n'] = n
                 best_config['thr'] = thr
                 best_config['mcc'] = mcc
-                print(n, thr, mcc)
+                print(f"n, thr mcc = {n}, {thr}, {mcc}")
 
     return best_config['n'], best_config['thr'], best_config['mcc']
 
@@ -144,6 +152,7 @@ if '__main__' == __name__:
         model = load_model(conf, vocabulary_size)
 
         y_prob, y_label = predict(model, dataloader)
+        y_label = np.array([target_classify(label) for label in y_label])
 
         y_pred.append(y_prob)
         y_true.append(y_label)
@@ -151,7 +160,33 @@ if '__main__' == __name__:
     y_pred = np.concatenate(y_pred, axis=0)
     y_true = np.concatenate(y_true, axis=0)
 
-    print(y_pred.shape, y_true.shape)
-    print(find_n_thr(y_pred, y_true))
+    n, thr, mcc = find_n_thr(y_pred, y_true)
+    print(f"n, thr mcc = {n}, {thr}, {mcc}")
+
+    test_path = f'data/finetune_features/SignalP/euk_test.txt'
+    test_dataloader = build_dataloader(test_path, is_SPDS17=True)
+
+    y_pred = []
+    for i in range(5):
+        model_dir = f'models/finetune/Sigunet_msk15_1_{i}:2-hidden_size:128-heads_count:2-fixed:True'
+        with open(f'{model_dir}/best_model_config.json') as json_data_file:
+            conf = json.load(json_data_file)
+
+        model = load_model(conf, vocabulary_size)
+
+        y_prob, y_label = predict(model, test_dataloader)
+
+        y_pred.append(y_prob)
+        if 0 == i:
+            y_true = y_label
+
+    y_pred = np.mean(y_pred, axis=0)
+    y_pred = [peptide_classify(y, n, thr) for y in y_pred]
+    y_pred = np.array(y_pred)
+
+    y_true = [target_classify(int(y)) for y in y_true]
+    y_true = np.array(y_true)
 
 
+    mcc = matthews_corrcoef(y_true, y_pred)
+    print(mcc)

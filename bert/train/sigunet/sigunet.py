@@ -44,7 +44,7 @@ class sigunet(nn.Module):
         self.finals_0 = conv1d((2 * m), m, kernel_size)
         self.finals_1 = conv1d(m, 3, kernel_size)
 
-    def forward(self, inputs, targets):
+    def forward(self, inputs, targets, is_prediction=False):
 
         # indexed_sequences, _ = inputs
         # onehot = index2onehot(dim=29, indexed_sequences=indexed_sequences, device=self.device)
@@ -106,6 +106,9 @@ class sigunet(nn.Module):
         # errorenous
         #out, _ = torch.max(out, 2)
         predictions = _out
+
+        if is_prediction:
+            return predictions, 0
 
         flatten_out = _out.flatten(start_dim=0, end_dim=1)
         flatten_target = targets.flatten(start_dim=0, end_dim=1)
